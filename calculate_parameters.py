@@ -22,7 +22,7 @@ resultpath = '../data_resliced/'
 
 
 #%% Reslice trials to waiting time
-for i in range(1, 6):
+for i in range(0, 6):
     block = np.load(path + 'data{}.npy'.format(i), encoding='latin1').item()
     
     block_sliced = neo.Block()
@@ -46,8 +46,11 @@ for i in range(1, 6):
         block_sliced.segments.append(seg_sliced)
         block_sliced.segments[-1].annotations           = trial.annotations
         block_sliced.segments[-1].annotations['RT']     = trial.events[0].annotations['signal'][trial.events[0].annotations['trial_event_labels'].index(b'GO-ON')] - trial.events[0].annotations['signal'][trial.events[0].annotations['trial_event_labels'].index(b'CUE-OFF')]
+
+        del trial.events[0].annotations['signal']
+        block_sliced.segments[-1].events                = trial.events
         
-        ut.add_channel_and_units_v2(block_sliced)
+    ut.add_channel_and_units_v2(block_sliced)
         
     
     #%% Add state parameters to every spiketrain
