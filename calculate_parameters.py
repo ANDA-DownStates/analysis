@@ -7,11 +7,11 @@ Calculates "state parameters" (= CV, CV2 etc.) for each unit and compares it to 
 #%% SETUP
 
 import neo
-import quantities as pq
+#import quantities as pq
 import numpy as np
 import elephant as el
 import matplotlib.pyplot as plt
-import os as os
+#import os as os
 import useful_tools as ut
 
 # Relative path to data (chenge to where you saved them)
@@ -22,7 +22,7 @@ resultpath = '../data_resliced/'
 
 
 #%% Reslice trials to waiting time
-for i in range(1, 6):
+for i in range(6):
     block = np.load(path + 'data{}.npy'.format(i), encoding='latin1').item()
     
     block_sliced = neo.Block()
@@ -47,7 +47,7 @@ for i in range(1, 6):
         block_sliced.segments[-1].annotations           = trial.annotations
         block_sliced.segments[-1].annotations['RT']     = trial.events[0].annotations['signal'][trial.events[0].annotations['trial_event_labels'].index(b'GO-ON')] - trial.events[0].annotations['signal'][trial.events[0].annotations['trial_event_labels'].index(b'CUE-OFF')]
         
-        ut.add_channel_and_units_v2(block_sliced)
+    ut.add_channel_and_units_v2(block_sliced)
         
     
     #%% Add state parameters to every spiketrain
