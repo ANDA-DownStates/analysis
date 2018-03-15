@@ -72,26 +72,6 @@ for i in range(1, 6):
             
     np.save(resultpath + 'data_resliced_with_stats{}.npy'.format(i), block_sliced)
         
-
-
-# Now loop over all electrodes and correlate its state parameter across all 
-# trials with the reaction time
-
-# Extract all Fano Factors
-factors = []
-for unit in block_sliced.list_units:
-    factors.append(unit.annotations['FF'])
-    
-    
-# Average CVs and CV2s across all trials of a unit
-CVs = []
-for unit in block_sliced.list_units:
-    temp = []
-    for train in unit.spiketrains:
-        if not(np.isnan(train.annotations['CV'])):
-            temp.append(train.annotations['CV'])
-        
-    CVs.append(np.mean(temp))
     
     
 
