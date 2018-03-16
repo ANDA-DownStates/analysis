@@ -22,11 +22,7 @@ resultpath = '../data_resliced/'
 
 
 #%% Reslice trials to waiting time
-<<<<<<< HEAD
-for i in range(0, 6):
-=======
 for i in range(6):
->>>>>>> 49e01dea6fdf059d4dff465c56fda7177a524ad7
     block = np.load(path + 'data{}.npy'.format(i), encoding='latin1').item()
     
     block_sliced = neo.Block()
