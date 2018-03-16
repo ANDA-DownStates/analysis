@@ -47,7 +47,7 @@ for i in range(0, 6):
         block_sliced.segments[-1].annotations           = trial.annotations
         block_sliced.segments[-1].annotations['RT']     = trial.events[0].annotations['signal'][trial.events[0].annotations['trial_event_labels'].index(b'GO-ON')] - trial.events[0].annotations['signal'][trial.events[0].annotations['trial_event_labels'].index(b'CUE-OFF')]
 
-        del trial.events[0].annotations['signal']
+        del trial.events[0].annotations['signal']       # fixes a neo bug
         block_sliced.segments[-1].events                = trial.events
         
     ut.add_channel_and_units_v2(block_sliced)
