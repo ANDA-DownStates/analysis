@@ -92,7 +92,7 @@ for i in range(6):
                 temp_sg.append(train) 
     
         unit.annotations['FF_PG'] = el.statistics.fanofactor(temp_pg)
-        unit.annotations['FF_SG'] = el.statistics.fanofactor(temp_pg)
+        unit.annotations['FF_SG'] = el.statistics.fanofactor(temp_sg)
         
         unit.annotations['FF_avg'] = (el.statistics.fanofactor(temp_pg ) + el.statistics.fanofactor(temp_sg)) / 2
             
