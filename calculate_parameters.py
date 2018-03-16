@@ -7,11 +7,11 @@ Calculates "state parameters" (= CV, CV2 etc.) for each unit and compares it to 
 #%% SETUP
 
 import neo
-import quantities as pq
+#import quantities as pq
 import numpy as np
 import elephant as el
 import matplotlib.pyplot as plt
-import os as os
+#import os as os
 import useful_tools as ut
 
 # Relative path to data (chenge to where you saved them)
@@ -22,7 +22,11 @@ resultpath = '../data_resliced/'
 
 
 #%% Reslice trials to waiting time
+<<<<<<< HEAD
 for i in range(0, 6):
+=======
+for i in range(6):
+>>>>>>> 49e01dea6fdf059d4dff465c56fda7177a524ad7
     block = np.load(path + 'data{}.npy'.format(i), encoding='latin1').item()
     
     block_sliced = neo.Block()
