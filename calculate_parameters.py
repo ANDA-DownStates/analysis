@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 Calculates "state parameters" (= CV, CV2 etc.) for each unit and compares it to the reaction time
+
+TODO: Add mean firing rate ( elephant.statistics.mean_firing_rate )
 """
 
 #%% SETUP
@@ -10,7 +12,7 @@ import neo
 #import quantities as pq
 import numpy as np
 import elephant as el
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 #import os as os
 import useful_tools as ut
 
@@ -45,7 +47,7 @@ for i in range(6):
         # ... and stuff the result into our new block
         block_sliced.segments.append(seg_sliced)
         block_sliced.segments[-1].annotations           = trial.annotations
-        block_sliced.segments[-1].annotations['RT']     = trial.events[0].annotations['signal'][trial.events[0].annotations['trial_event_labels'].index(b'GO-ON')] - trial.events[0].annotations['signal'][trial.events[0].annotations['trial_event_labels'].index(b'CUE-OFF')]
+        block_sliced.segments[-1].annotations['RT']     = trial.events[0].annotations['signal'][trial.events[0].annotations['trial_event_labels'].index(b'SR')] - trial.events[0].annotations['signal'][trial.events[0].annotations['trial_event_labels'].index(b'GO-ON')]
 
         del trial.events[0].annotations['signal']       # fixes a neo bug
         block_sliced.segments[-1].events                = trial.events
@@ -59,19 +61,40 @@ for i in range(6):
     for idx, trial in enumerate(block_sliced.segments):  # for each trial and spiketrain    
         for idx_st, spiketrain in enumerate(trial.spiketrains):
             if len(spiketrain) > 0:
+                # CV
                 trial.spiketrains[idx_st].annotations['CV']          = el.statistics.cv(spiketrain)
             
                 temp_isi = el.statistics.isi(spiketrain)
+                
+                # CV2
                 if len(temp_isi) > 1:
                     trial.spiketrains[idx_st].annotations['CV2']     = el.statistics.cv2(temp_isi)
                 else:
                     trial.spiketrains[idx_st].annotations['CV2']     = np.NaN   
+                
+                # Firing rate
+                trial.spiketrains[idx_st].annotations['FR']          = el.statistics.mean_firing_rate(spiketrain)
             else:
                 trial.spiketrains[idx_st].annotations['CV']          = np.NaN
                 trial.spiketrains[idx_st].annotations['CV2']         = np.NaN
+                trial.spiketrains[idx_st].annotations['FR']          = 0
         
     for unit in block_sliced.list_units:
+         
+        temp_pg = []
+        temp_sg = []
         unit.annotations['FF'] = el.statistics.fanofactor(unit.spiketrains)
+        
+        for train in unit.spiketrains:
+            if train.annotations['belong_to_trialtype'].startswith('PG'): 
+                temp_pg.append(train) 
+            else: 
+                temp_sg.append(train) 
+    
+        unit.annotations['FF_PG'] = el.statistics.fanofactor(temp_pg)
+        unit.annotations['FF_SG'] = el.statistics.fanofactor(temp_sg)
+        
+        unit.annotations['FF_avg'] = (el.statistics.fanofactor(temp_pg ) + el.statistics.fanofactor(temp_sg)) / 2
             
     np.save(resultpath + 'data_resliced_with_stats{}.npy'.format(i), block_sliced)
         
