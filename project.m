@@ -4,7 +4,7 @@ rootFolder = 'C:\Users\superuser\Documents\ANDA\project\data';
 dataFiles = ls([rootFolder, '\*.mat']);
 
 % load file
-fileID = 0;
+fileID = 4;
 load( fullfile(rootFolder, dataFiles(fileID+1,:)));
 
 unitsNum = numel(block.segments{1}.spiketrains);
@@ -79,7 +79,7 @@ stop = eventTime(block, 'STOP');
 % % ylabel('unit ID')
 % % 
 % % yAxis = [1, k];
-% % jetColor = jet(10);
+% % jetColor = jet(15);
 % % p{1,1} = plot(tsON(trial,1)*[1,1], yAxis,'Color',jetColor(1,:),'LineWidth',2);
 % % p{2,1} = plot(wsON(trial,1)*[1,1], yAxis,'Color',jetColor(2,:),'LineWidth',2);
 % % p{3,1} = plot(cueON(trial,1)*[1,1], yAxis,'Color',jetColor(3,:),'LineWidth',2);
@@ -162,17 +162,22 @@ end
 
 
 %% psth
-trial = 15;
+trial = 1;
 range = [cueOFF, goON];    %sec
 binSize = 0.025; %sec
 
-spkTrain_inRange = cell(unitNum,4);
+trailType_num_merge = trailType_num;
+trailType_num_merge( trailType_num_merge==3) = 1;   % merge the condition 1 and 3 (both PG)
+trailType_num_merge( trailType_num_merge==4) = 2;
+
+
+spkTrain_inRange = cell(unitNum,numel(unique(trailType_num_merge)));
 for i = 1:trialNum
     spkTra_sinlge_trial = spikeTrains_chID_order{i,1};  % all spk train in a single trial
     for j = 1:unitNum
         spkTrain_temp = spkTra_sinlge_trial{j,1};   %single unit spike train
         spkTrain_temp = spkTrain_temp(spkTrain_temp>=range(i,1) & spkTrain_temp<range(i,2));
-        spkTrain_inRange{j,trailType_num(i)} = [spkTrain_inRange{j,trailType_num(i)}, spkTrain_temp];
+        spkTrain_inRange{j,trailType_num_merge(i)} = [spkTrain_inRange{j,trailType_num_merge(i)}, spkTrain_temp];
     end
 end
 
@@ -194,7 +199,7 @@ psth_length = numel(range(trial,1):binSize:range(trial,2))-1;   % the -1 is beca
 % fix binsize)
 
 for i = 1:unitNum
-    for j = 1:numel(unique(trailType_num))  % loop through trial type (conditions)
+    for j = 1:numel(unique(trailType_num_merge))  % loop through trial type (conditions)
         psth_inRange(i,(j-1)*psth_length+1:j*psth_length) = psth(spkTrain_inRange{i,j}, range(trial,:), binSize);
     end
 end
@@ -206,7 +211,7 @@ C = cov(psth_inRange_centered');
 [eigVec, eigVal] = eig(C);
 nPC = 10;    % number of PC
 PCZ   = eigVec(:,end-nPC+1:end)'*psth_inRange_centered; % extract first n PCs
-PCX   = reshape( PCZ, nPC, 4, psth_length);  % reshape back into three-d array: (# pcs) x (# conditions) x (# psth)
+PCX   = reshape( PCZ, nPC, numel(unique(trailType_num_merge)), psth_length);  % reshape back into three-d array: (# pcs) x (# conditions) x (# psth)
 score = eigVec/psth_inRange_centered';  % ??
 
 % create color map for plotting
@@ -219,7 +224,7 @@ K = 4;
 for i=1:K
     subplot(floor(sqrt(K)), ceil( K/floor(sqrt(K))),i)
     hold on;
-    for k = 1:4     % loop through 4 conditions
+    for k = 1:numel(unique(trailType_num_merge))     % loop through 4 conditions
         plot( 1:psth_length, squeeze( PCX((nPC-i+1), k, :)));
     end
     title(['PC' num2str(i)])
@@ -230,28 +235,49 @@ suptitle(['data' num2str(fileID)]);
 %%
 [~,mrFet,~] = pca(psth_inRange', 'Centered', 1, 'NumComponents', 3);
 
+subGroupNum = 2;
+group = ones(psth_length,2);
+group = group.*[1:subGroupNum];
+group = reshape(group, 1, numel(group));
 
+colors = ['k', 'r', 'b', 'g', 'm', 'c'];
 figure;
 subplot(2,2,1)
-plot(mrFet(:,1), mrFet(:,2), 'k.')
+hold on;
+for i = 1:subGroupNum
+    plot(mrFet(group==i,1), mrFet(group==i,2), '.', 'Color', colors(i))
+end
 xlabel('PC1')
 ylabel('PC2')
 
 subplot(2,2,2)
-plot(mrFet(:,1), mrFet(:,3), 'k.')
+% plot(mrFet(:,1), mrFet(:,3), 'k.')
+hold on;
+for i = 1:subGroupNum
+    plot(mrFet(group==i,1), mrFet(group==i,3), '.', 'Color', colors(i))
+end
 xlabel('PC1')
 ylabel('PC3')
 
 subplot(2,2,3)
-plot(mrFet(:,2), mrFet(:,3), 'k.')
+% plot(mrFet(:,2), mrFet(:,3), 'k.')
+hold on;
+for i = 1:subGroupNum
+    plot(mrFet(group==i,2), mrFet(group==i,3), '.', 'Color', colors(i))
+end
 xlabel('PC2')
 ylabel('PC3')
 
 subplot(2,2,4)
-plot3(mrFet(:,1), mrFet(:,2), mrFet(:,3),'k.')
+% plot3(mrFet(:,1), mrFet(:,2), mrFet(:,3),'k.')
+hold on;
+for i = 1:subGroupNum
+    plot3(mrFet(group==i,1), mrFet(group==i,2), mrFet(group==i,3), '.', 'Color', colors(i))
+end
 xlabel('PC1')
 ylabel('PC2')
 zlabel('PC3')
+view(3)
 
 suptitle(['data' num2str(fileID)]);
 
