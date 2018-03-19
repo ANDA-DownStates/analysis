@@ -36,7 +36,7 @@ for idx, segment in enumerate(block.segments):  # for each trial
     # Reslice the existing spiketrains, put them into a new neo.Segment
     seg_sliced  = neo.Segment()
     for spike in segment.spiketrains:
-        seg_sliced.spiketrains.append(spike.time_slice(on_time, off_time))
+        seg_sliced.spiketrains.append(spike.time_slice(on_time - 0.100 * pq.s, off_time + 0.100 * pq.s))
         seg_sliced.spiketrains[-1].segment          = seg_sliced    # reroute the segment back-pointer
         seg_sliced.spiketrains[-1].unit             = None  # kill unit still pointing to the old one
     
