@@ -42,7 +42,7 @@ for idx, segment in enumerate(block.segments):  # for each trial
     
     if len(block.segments[0].analogsignals) != 0:
         for asignal in segment.analogsignals:
-            seg_sliced.analogsignals.append(asignal.time_slice(on_time, off_time))
+            seg_sliced.analogsignals.append(asignal.time_slice(on_time - 0.100 * pq.s, off_time + 0.100 * pq.s))
             seg_sliced.analogsignals[-1].segment        = seg_sliced  # reroute the segment back-pointer
             seg_sliced.analogsignals[-1].channel_index  = None      # kill channel index still pointing to the old one
 
@@ -54,4 +54,4 @@ for idx, segment in enumerate(block.segments):  # for each trial
     
 ut.add_channel_and_units_v2(block_sliced)
 
-np.save(path + 'data_lfp_py3_preptime{}.npy', block_sliced)
+np.save(path + 'data_lfp_py3_preptime.npy', block_sliced)
