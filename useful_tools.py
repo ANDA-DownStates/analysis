@@ -3,7 +3,7 @@ import quantities as pq
 import neo
 
 
-def add_channel_and_units_v2(block):
+def add_channel_and_units_v3(block):
     sts = []
     for seg in block.segments:
         sts.extend(seg.spiketrains)
@@ -13,12 +13,13 @@ def add_channel_and_units_v2(block):
             pass
     # collecting channel_indexes by channel_id
     channel_idxs = {}
+    
+    for channel_idx in block.channel_indexes:
+        channel_idxs[channel_idx.annotations['channel_id']] = channel_idx
 
     def get_channel_idx(channel_id):
         if channel_id not in channel_idxs:
-            channel_idxs[channel_id] = neo.ChannelIndex(name='Channel {}'.format(channel_id),
-    index=None,
-    channel_id=channel_id)
+            channel_idxs[channel_id] = neo.ChannelIndex(name='Channel {}'.format(channel_id), index=None, channel_id=channel_id)
             block.channel_indexes.append(channel_idxs[channel_id])
         return channel_idxs[channel_id]
 
@@ -42,3 +43,13 @@ def add_channel_and_units_v2(block):
         unit = get_unit(unit_id, channel_idx)
 
         unit.spiketrains.append(st)
+    
+    for segment in block.segments:
+        for asig in segment.analogsignals:
+            channel_id = asig.annotations['channel_id']
+            channel_idx = get_channel_idx(channel_id)
+            
+            asig.channel_index = channel_idx
+            channel_idx.analogsignals.append(asig)
+            
+            
