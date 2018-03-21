@@ -92,24 +92,23 @@ for train in merged_trains:
     train.t_stop = lfp.t_stop   # some correction of rounding errors
     train.t_start = lfp.t_start
     
-    cohs_temp, freqs                                    = el.sta.spike_field_coherence(lfp, train)
-    if len(cohs_temp) == 0:
-        print('empty cohs!')
-    cohs[train.annotations['connector_aligned_id']]     = cohs_temp
-    sta_temp                                            = el.sta.spike_triggered_average(lfp, train, (-10 * pq.ms, 10 * pq.ms))
+    #cohs_temp, freqs                                    = el.sta.spike_field_coherence(lfp, train)
+    #if len(cohs_temp) == 0:
+    #    print('empty cohs!')
+    #cohs[train.annotations['connector_aligned_id']]     = cohs_temp
+    sta_temp                                            = el.sta.spike_triggered_average(lfp, train, (-100 * pq.ms, 100 * pq.ms))
     if len(sta_temp) == 0:
         print('empty sta!')
     sta[train.annotations['connector_aligned_id']]      = sta_temp
 
     counter += 1
 
-np.save(path + 'cohs_freqs_sta.npy', [cohs, freqs, sta])
+np.save(path + 'cohs.npy', cohs)
+np.save(path + 'freqs.npy', freqs)
+np.save(path + 'sta.npy', sta)
 
-#%% MERGE FOR CORRELATION WITH RT
+#%% LFP-SPIKE COHERENCE FOR CORRELATION WITH RT
 #%% --------------------------------------------------------------------------
-# Now, concatenate over neurons/channels for each trial, so that we can 
-# correlate this with RT
-
 # Collect all trial IDs
 trialids = []
 for seg in b.segments:
@@ -157,10 +156,7 @@ for trial in trialids:
       
         
 
-# TODO: Merge units from one electrode?
-
-# TODO: Re-Calculate stas for +/- 100 ms
-cohs, freqs, sta = np.load(path + 'cohs_freqs_sta.npy', encoding='latin1')
+#cohs, freqs, sta = np.load(path + 'cohs_freqs_sta.npy', encoding='latin1')
 maxs = []
 for coh in list(cohs.values()):
     maxs.append(max(coh))
@@ -172,12 +168,12 @@ for s in list(sta.values()):
     print(len(s))
     stas.append(s)
     
-f = plt.figure(figsize = (12, 12))    
+f = plt.figure(figsize = (30, 20))    
 plt.plot(stas[0].times, sum(stas) / len(stas), linewidth=3.0)
-plt.title('Spike-triggered LFP average (neighboring channel)\n', fontsize=18)
+plt.title('Spike-triggered LFP average\n', fontsize=48)
 plt.xlabel('Time', fontsize=18)
 plt.ylabel('a.u.', fontsize=18)
-plt.xlim(-10, 10)
+plt.xlim(-100, 100)
 plt.axvline(x=0,color='k', linewidth=1.0)
 f.savefig('Spike-triggered average across all units')
      

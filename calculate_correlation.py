@@ -43,8 +43,11 @@ CV_means = []
 CV2_means = []
     
 for i in range(0, 6):
+    i = 2
     block_sliced = np.load(path + 'data_resliced_with_stats{}.npy'.format(i)).item()
-
+    for seg in block_sliced.segments:
+        seg.events[0].annotations.pop('signal')
+    
     no_trials       = len(block_sliced.segments)
     no_units        = len(block_sliced.list_units)
     RTs             = []
